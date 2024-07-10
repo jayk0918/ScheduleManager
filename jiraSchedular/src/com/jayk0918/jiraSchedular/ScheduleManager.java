@@ -1,5 +1,7 @@
 package com.jayk0918.jiraSchedular;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -27,6 +29,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
 public class ScheduleManager extends JFrame {
 	
@@ -62,7 +65,29 @@ public class ScheduleManager extends JFrame {
             table.setModel(tableModel); // 테이블에 모델 설정
         }
         
-        table = new JTable(tableModel);
+        table = new JTable(tableModel){
+        	private static final long serialVersionUID = 1L;
+        	@Override
+        	public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
+        		Component c = super.prepareRenderer(renderer, row, column);
+        		Color deployed = new Color(255, 153, 255);
+        		if(!isRowSelected(row)){
+        			String status = (String) getModel().getValueAt(row, 3);
+    				if( "preqa uploaded".equals(status) || "confirm required".equals(status)){
+						c.setBackground(Color.CYAN);
+					} else if("in progress".equals(status)){
+						c.setBackground(Color.GREEN.brighter());
+			        } else if("holding".equals(status)){
+			        	c.setBackground(Color.YELLOW.brighter());
+			        } else if("confirmed".equals(status) || "deployed to prod".equals(status)){
+			        	c.setBackground(deployed);
+			        } else{
+			        	c.setBackground(Color.WHITE);
+			        }
+        		}
+        		return c;
+    		}
+        };
         
         // 각 열의 셀 렌더러 설정
         DefaultTableCellRenderer centerRenderer = new CenterRenderer();
@@ -98,7 +123,7 @@ public class ScheduleManager extends JFrame {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                tableModel.addRow(new Object[]{"CRHQ- || CRFP-", "", "", "open", ""});
+                tableModel.addRow(new Object[]{"CRHQ-", "", "", "open", ""});
             }
         });
 
@@ -117,7 +142,7 @@ public class ScheduleManager extends JFrame {
             }
         });
         
-        JComboBox<String> statusComboBox = new JComboBox<>(new String[]{"open", "in progress", "holding", "preqa uploaded", "confirm required", "deployed to prod"});
+        JComboBox<String> statusComboBox = new JComboBox<>(new String[]{"open", "in progress", "holding", "preqa uploaded", "confirm required", "confirmed", "deployed to prod"});
         table.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(statusComboBox));
         
         // 프로그램 종료 시 데이터 저장

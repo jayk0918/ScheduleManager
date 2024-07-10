@@ -22,7 +22,7 @@ public class DataManager {
         }
     }
 
- // 데이터 불러오기
+    // 데이터 불러오기
     @SuppressWarnings("unchecked")
 	public List<Task> loadData(String filename) {
         List<Task> taskList = new ArrayList<>();
